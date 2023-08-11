@@ -10,9 +10,14 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.SendRate = 60;
         PhotonNetwork.SerializationRate = 30;
+
+        
     }
 
     public void Connect() => PhotonNetwork.ConnectUsingSettings();
 
-    //public override void 
+    public override void OnJoinedRoom()
+    {
+       
+    }
 }
