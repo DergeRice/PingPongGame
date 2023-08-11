@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 61d2074cc16590049a7caaa6f6a16188, type: 2}
+    - target: {fileID: 3383662354046134741, guid: 7f7c71b811a72ca41bbea49972447173, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.34
+      objectReference: {fileID: 0}
     - target: {fileID: 9222927452432251957, guid: 7f7c71b811a72ca41bbea49972447173, type: 3}
       propertyPath: m_Name
       value: BluePlayer
