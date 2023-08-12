@@ -32,7 +32,7 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
     [PunRPC]
     void ExitCanvasToAll()
     {
-
+        GameManager.instance.EndSetting();
     }
 
     private void Start()
@@ -46,6 +46,11 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("JoinedRoom");
         GameManager.instance.ShowCanvas();
+
+        if(PhotonNetwork.CountOfPlayers > 1)
+        {
+           GameManager.instance.photonView.RPC("EnteredOp",RpcTarget.All);
+        }
     }
 
     public override void OnConnectedToMaster()
@@ -63,13 +68,14 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("EnterLobby");
         PhotonNetwork.JoinOrCreateRoom("Default", new RoomOptions { MaxPlayers = 2 }, null);
-        
+
     }
 
     public override void OnCreatedRoom()
     {
         Debug.Log("CreatedRoom");
         GameManager.instance.Master = true;
-
     }
+
+
 }
