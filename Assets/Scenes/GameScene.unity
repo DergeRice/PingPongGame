@@ -1915,6 +1915,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1200118435539686717, guid: 57f223b930228b647b9ef606f2052363, type: 3}
+      propertyPath: sceneViewId
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1200118435539686717, guid: 57f223b930228b647b9ef606f2052363, type: 3}
+      propertyPath: observableSearch
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2655210351893913578, guid: 57f223b930228b647b9ef606f2052363, type: 3}
       propertyPath: m_Name
       value: Ball
