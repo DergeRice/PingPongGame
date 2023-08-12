@@ -11,10 +11,11 @@ public class BarScript : MonoBehaviour
 
     public PhotonView PV;
     public bool Movable;
+    [SerializeField] float MoveSpeed;
 
     private void Awake()
     {
-        Movable = PV.IsMine ? true :false;
+        //Movable = PV.IsMine ? true :false;
     }
     private void Start()
     {
@@ -24,6 +25,16 @@ public class BarScript : MonoBehaviour
 
     private void Update()
     {
-        
+        if (Movable)
+        {
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                transform.position -= Vector3.forward * Time.deltaTime * MoveSpeed;
+            }
+            if (Input.GetKey(KeyCode.UpArrow))
+            {
+                transform.position += Vector3.forward * Time.deltaTime * MoveSpeed;
+            }
+        }
     }
 }
