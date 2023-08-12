@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 
 public class DetectionScript : MonoBehaviour
 {
@@ -8,9 +10,9 @@ public class DetectionScript : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.transform.tag == "ball")
+        if(collision.transform.tag == "Ball")
         {
-            ConnectedBar.GetComponent<BarScript>().Hit();
+            ConnectedBar.GetComponent<BarScript>().PV.RPC("Hit",RpcTarget.All);
         }
     }
 }

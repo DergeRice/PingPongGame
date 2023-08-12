@@ -10,13 +10,46 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public static GameManager instance;
     public bool DebugMode;
     public bool Master;
-    [SerializeField] GameObject MasterCanvas,ClientCanvas,CommonCanvas, Ball, RedBar,BlueBar, WaitOp, EnterOp, Panel;
 
-    public bool ImBlue;
+    [SerializeField] GameObject MasterCanvas,ClientCanvas,CommonCanvas,CountCanvas,InGameCanvas, RedBar,BlueBar, WaitOp, EnterOp, Panel, Timer;
+
+    public GameObject Ball;
+
+    public bool ImBlue, GamePlaying;
+
+    float GameTime;
+
+    [SerializeField] float LimitTime;
+
+    WaitForSeconds WaitOneSec = new WaitForSeconds(1f);
     // Start is called before the first frame update
     private void Awake()
     {
         instance = this;
+        GameTime = LimitTime;
+    }
+
+    private void Update()
+    {
+        if(GamePlaying) SetTimer();
+    }
+
+    public void SetTimer()
+    {
+        GameTime -= Time.deltaTime;
+        Timer.GetComponent<Text>().text = ((int)GameTime).ToString();
+
+        if(GameTime < 0)
+        {
+            GameTime = 0;
+            FullResetGame();
+            ShowResult();
+        }
+    }
+
+    public void ShowResult()
+    {
+
     }
 
     public void ShowCanvas()
@@ -39,7 +72,11 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public void EndSetting()
     {
         Text CanvasText = CommonCanvas.transform.GetChild(0).GetComponent<Text>();
+        
+        CountCanvas.SetActive(true);
 
+        StartCoroutine("CountCanvasCoroutine", 5f);
+        Invoke("StartGame", 5f);
         if (Master)
         {
             MasterCanvas.SetActive(false);
@@ -57,7 +94,8 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
             if (Master)
             {
                 SetBallPos(BlueBar);
-                RedBar.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.PlayerList[1]); 
+                RedBar.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.PlayerList[1]);
+                BlueBar.GetComponent<BarScript>().BallIsOnMyControl = true;
                 // transfer ownership to other player (except me:0)
             }
         }
@@ -74,15 +112,39 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
+    IEnumerator CountCanvasCoroutine(int InitialSec)
+    {
+        if (InitialSec == 0) yield return null;
+
+        CountCanvas.transform.GetChild(0).GetComponent<Text>().text = $"{InitialSec}초 뒤에 게임을 시작합니다!!";
+        yield return WaitOneSec;
+
+        StartCoroutine("CountCanvasCoroutine",InitialSec-1);
+    }
+
+    public void StartGame()
+    {
+        InGameCanvas.SetActive(true);
+        CountCanvas.SetActive(false);
+        GamePlaying = true;
+    }
+
     public void SetBallPos(GameObject Target)
     {
         Ball.transform.position =  Target.GetComponent<BarScript>().BallPos;
     }
 
-    public void ResetGame()
+    public void ResetPos()
     {
         RedBar.transform.position = RedBar.GetComponent<BarScript>().InitialPos;
         BlueBar.transform.position = BlueBar.GetComponent<BarScript>().InitialPos;
+    }
+
+    public void FullResetGame()
+    {
+        RedBar.transform.position = RedBar.GetComponent<BarScript>().InitialPos;
+        BlueBar.transform.position = BlueBar.GetComponent<BarScript>().InitialPos;
+        Panel.SetActive(true);
     }
 
     [PunRPC]

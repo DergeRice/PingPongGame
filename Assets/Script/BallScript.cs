@@ -13,7 +13,7 @@ public class BallScript : MonoBehaviourPunCallbacks
     PhotonView PV;
 
 
-    public Vector3 NetworkPos;
+    public Vector3 NetworkPos, InitialPos;
 
     Rigidbody rigid;
     // Start is called before the first frame update
@@ -26,7 +26,7 @@ public class BallScript : MonoBehaviourPunCallbacks
     private void Start()
     {
         gameManager = GameManager.instance;
-
+        InitialPos = transform.position;
         NetworkPos = transform.position;
     }
 
