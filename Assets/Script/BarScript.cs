@@ -12,7 +12,7 @@ public class BarScript : MonoBehaviour
     public Vector3 BallPos, InitialPos, NetworkPos;
 
     public PhotonView PV;
-    public bool Movable, BallIsOnMyControl;
+    public bool Movable, BallIsOnMyControl, GamePlaying;
     [SerializeField] float MoveSpeed, BallPower;
 
     public int OpPoint;
@@ -26,12 +26,14 @@ public class BarScript : MonoBehaviour
         //Movable = PV.IsMine ? true :false;
         PV = GetComponent<PhotonView>();
         InitialPos = transform.position;
+
+        BallPosObj = transform.GetChild(0).gameObject;
+        BallPos = BallPosObj.transform.position;
     }
     private void Start()
     {
         Ball = GameManager.instance.Ball;
-        BallPosObj = transform.GetChild(0).gameObject;
-        BallPos = BallPosObj.transform.position;
+        
 
         NetworkPos = transform.position;
     }
@@ -40,29 +42,16 @@ public class BarScript : MonoBehaviour
     {
         transform.position = Vector3.Lerp(transform.position, NetworkPos, Time.deltaTime * 10);
 
-
-        if (Input.GetKey(KeyCode.DownArrow))
+        if (Movable && GamePlaying)
         {
-            if (Movable)
+            if (Input.GetKey(KeyCode.DownArrow))
             {
                 transform.position -= Vector3.forward * Time.deltaTime * MoveSpeed;
-              
-            }
-            if(GameManager.instance.Master)
-            {
                 BallControlAction(-Vector3.forward);
             }
-
-        }
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            if (Movable)
+            if (Input.GetKey(KeyCode.UpArrow))
             {
                 transform.position += Vector3.forward * Time.deltaTime * MoveSpeed;
-               
-            }
-            if (GameManager.instance.Master)
-            {
                 BallControlAction(Vector3.forward);
             }
         }
@@ -78,17 +67,25 @@ public class BarScript : MonoBehaviour
             BallIsOnMyControl = false;
             if (GameManager.instance.ImBlue) Toward += Vector3.left;
             else Toward += Vector3.right;
-            Ball.GetComponent<Rigidbody>().AddForce(Toward * BallPower, ForceMode.VelocityChange);
+
+            PV.RPC("BallShoot", PhotonNetwork.MasterClient, Toward);
+           
         }
     }
 
+    [PunRPC]
+    public void BallShoot(Vector3 Toward)
+    {
+        Ball.GetComponent<Rigidbody>().AddForce(Toward * BallPower, ForceMode.VelocityChange);
+    }
+
+    [PunRPC]
     public void Hit()
     {
         OpPoint += 10;
         OpPointText.GetComponent<Text>().text = OpPoint.ToString();
         BallPos = BallPosObj.transform.position;
-        Ball.transform.position = BallPos;
-        Ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        GameManager.instance.SetBallPos(gameObject);
         BallIsOnMyControl = true;
     }
 }

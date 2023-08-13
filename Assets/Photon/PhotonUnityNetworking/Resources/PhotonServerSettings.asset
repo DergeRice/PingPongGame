@@ -41,6 +41,9 @@ MonoBehaviour:
   - RespawnSpaceship
   - ExitCanvasToAll
   - EnteredOp
+  - BallShoot
+  - Hit
+  - SetMyPlayerBlue
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
