@@ -12,10 +12,10 @@ public class BarScript : MonoBehaviour
     public Vector3 BallPos, InitialPos, NetworkPos;
 
     public PhotonView PV;
-    public bool Movable, BallIsOnMyControl, GamePlaying;
+    public bool Movable, BallIsOnMyControl, GamePlaying, ImBlue;
     [SerializeField] float MoveSpeed, BallPower;
 
-    public int OpPoint;
+    
     public GameObject OpPointText,Ball;
 
     Vector3 MovVec;
@@ -89,14 +89,8 @@ public class BarScript : MonoBehaviour
         BallPos = BallPosObj.transform.position;
         Ball.transform.position = BallPos;
 
-        GameManager.instance.BallHit(BallPos);
+        GameManager.instance.BallHit(BallPos,ImBlue);
 
-
-        //Invoke("SetPosBack", 0.05f);
-        OpPoint += 10;
-        OpPointText.GetComponent<Text>().text = OpPoint.ToString();
-        
-        
         BallIsOnMyControl = true;
     }
 

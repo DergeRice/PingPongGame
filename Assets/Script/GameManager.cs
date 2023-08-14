@@ -12,13 +12,17 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public bool Master;
 
     [SerializeField] GameObject MasterCanvas,ClientCanvas,CommonCanvas,CountCanvas,InGameCanvas, RedBar,BlueBar, WaitOp, EnterOp, Panel, Timer;
+    [SerializeField] GameObject ResultCanvas, BluePointText, RedPointText;
 
     public GameObject Ball, BallPrefeb;
 
     public bool ImBlue, GamePlaying;
 
+    const string OpRunOutMent = "상대가 떠났습니다. 다음 상대를 기다리는 중"; 
     float GameTime;
 
+    public int BluePoint, RedPoint;
+    Vector3 BallInitialPos;
     [SerializeField] float LimitTime;
 
     public PhotonView PV;
@@ -30,6 +34,11 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         instance = this;
         GameTime = LimitTime;
         PV = GetComponent<PhotonView>();
+    }
+
+    private void Start()
+    {
+        BallInitialPos = Ball.transform.position;
     }
 
     private void Update()
@@ -44,18 +53,49 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
         if(GameTime < 0)
         {
-            GameTime = 0;
-            FullResetGame();
-            GamePlaying = false;
-            RedBar.GetComponent<BarScript>().GamePlaying = false;
-            BlueBar.GetComponent<BarScript>().GamePlaying = false;
             ShowResult();
         }
     }
 
     public void ShowResult()
     {
+        ResultCanvas.SetActive(true);
 
+        GameTime = LimitTime;
+        Timer.GetComponent<Text>().text = ((int)GameTime).ToString();
+
+        int MyPoint, OpPoint;
+        if (ImBlue)
+        {
+            MyPoint = BluePoint;
+            OpPoint = RedPoint;
+        }else
+        {
+            MyPoint = RedPoint;
+            OpPoint = BluePoint;
+        }
+
+        if (MyPoint > OpPoint)
+        {
+            ResultCanvas.transform.GetChild(0).GetComponent<Text>().text = "승리!!!";
+        } else ResultCanvas.transform.GetChild(0).GetComponent<Text>().text = "패배..";
+
+        ResetAll();
+
+
+        EndSetting();
+
+    }
+
+    void ResetAll()
+    {
+        BluePoint = 0;
+        RedPoint = 0;
+        ResetPos();
+
+        GamePlaying = false;
+        RedBar.GetComponent<BarScript>().GamePlaying = false;
+        BlueBar.GetComponent<BarScript>().GamePlaying = false;
     }
 
     public void ShowCanvas()
@@ -73,12 +113,18 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     }
 
-    public void BallHit(Vector3 Pos)
+    public void BallHit(Vector3 Pos, bool ImBlue)
     {
         Destroy(Ball);
         GameObject NewBall = Instantiate(BallPrefeb);
         NewBall.transform.position = Pos;
         Ball = NewBall;
+
+        if (ImBlue) RedPoint += 10;
+        else BluePoint += 10;
+
+        BluePointText.GetComponent<Text>().text = BluePoint.ToString();
+        RedPointText.GetComponent<Text>().text = RedPoint.ToString();
 
         RedBar.GetComponent<BarScript>().Ball = NewBall;
         BlueBar.GetComponent<BarScript>().Ball = NewBall;
@@ -164,7 +210,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
             RedBar.GetComponent<BarScript>().Movable = true;
         }
     }
-
+    [PunRPC]
     public void SetBallPos(GameObject Target)
     {
         Ball.transform.position =  Target.GetComponent<BarScript>().BallPos;
@@ -177,13 +223,18 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         RedBar.transform.position = RedBar.GetComponent<BarScript>().InitialPos;
         BlueBar.transform.position = BlueBar.GetComponent<BarScript>().InitialPos;
+        Ball.transform.position = BallInitialPos;
     }
 
-    public void FullResetGame()
+    [PunRPC]
+    public void OpRunOutGame()
     {
-        RedBar.transform.position = RedBar.GetComponent<BarScript>().InitialPos;
-        BlueBar.transform.position = BlueBar.GetComponent<BarScript>().InitialPos;
-        Panel.SetActive(true);
+        ResetAll();
+        ShowResult();
+        MasterCanvas.SetActive(true);
+        EnterOp.SetActive(false);
+        WaitOp.SetActive(true);
+        WaitOp.GetComponent<Text>().text = OpRunOutMent;
     }
 
     [PunRPC]

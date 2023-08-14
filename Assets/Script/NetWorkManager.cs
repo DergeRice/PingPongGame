@@ -11,6 +11,8 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
 
     public PhotonView PV;
 
+    bool GamePlayed;
+
     
     private void Awake()
     {
@@ -24,7 +26,19 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
         
     }
 
+    private void Update()
+    {
+        if (GameManager.instance.GamePlaying) GamePlayed = true;
 
+        if (GamePlayed)
+        {
+            if(PhotonNetwork.PlayerList.Length < 2)
+            {
+                GameManager.instance.PV.RPC("OpRunOutGame", RpcTarget.All);
+                GamePlayed = false;
+            }
+        }
+    }
 
     private void Start()
     {
@@ -66,6 +80,11 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("CreatedRoom");
         GameManager.instance.Master = true;
+    }
+
+    public override void OnDisconnected(DisconnectCause cause)
+    {
+        GameManager.instance.PV.RPC("OpRunOutGame", RpcTarget.All);
     }
 
 
