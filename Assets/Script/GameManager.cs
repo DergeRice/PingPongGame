@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     [SerializeField] GameObject MasterCanvas,ClientCanvas,CommonCanvas,CountCanvas,InGameCanvas, RedBar,BlueBar, WaitOp, EnterOp, Panel, Timer;
 
-    public GameObject Ball;
+    public GameObject Ball, BallPrefeb;
 
     public bool ImBlue, GamePlaying;
 
@@ -46,6 +46,9 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         {
             GameTime = 0;
             FullResetGame();
+            GamePlaying = false;
+            RedBar.GetComponent<BarScript>().GamePlaying = false;
+            BlueBar.GetComponent<BarScript>().GamePlaying = false;
             ShowResult();
         }
     }
@@ -66,9 +69,22 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public void SetMyPlayerBlue(bool AmIblue)
     {
         ImBlue = AmIblue;
-        NetWorkManager.instance.ExitCanvas();
+        PV.RPC("EndSetting", RpcTarget.All);
+
     }
 
+    public void BallHit(Vector3 Pos)
+    {
+        Destroy(Ball);
+        GameObject NewBall = Instantiate(BallPrefeb);
+        NewBall.transform.position = Pos;
+        Ball = NewBall;
+
+        RedBar.GetComponent<BarScript>().Ball = NewBall;
+        BlueBar.GetComponent<BarScript>().Ball = NewBall;
+    }
+
+    [PunRPC]
     public void EndSetting()
     {
         if (!GamePlaying)
@@ -153,7 +169,9 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         Ball.transform.position =  Target.GetComponent<BarScript>().BallPos;
         Ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        Ball.GetComponent<Rigidbody>().AddForce(Vector3.zero, ForceMode.VelocityChange);
     }
+
 
     public void ResetPos()
     {

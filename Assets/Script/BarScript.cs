@@ -82,10 +82,26 @@ public class BarScript : MonoBehaviour
     [PunRPC]
     public void Hit()
     {
+        Ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        Ball.GetComponent<Rigidbody>().AddForce(Vector3.zero, ForceMode.VelocityChange);
+
+
+        BallPos = BallPosObj.transform.position;
+        Ball.transform.position = BallPos;
+
+        GameManager.instance.BallHit(BallPos);
+
+
+        //Invoke("SetPosBack", 0.05f);
         OpPoint += 10;
         OpPointText.GetComponent<Text>().text = OpPoint.ToString();
-        BallPos = BallPosObj.transform.position;
-        GameManager.instance.SetBallPos(gameObject);
+        
+        
         BallIsOnMyControl = true;
+    }
+
+    void SetPosBack()
+    {
+        
     }
 }

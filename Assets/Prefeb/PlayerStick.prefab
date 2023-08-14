@@ -183,11 +183,13 @@ MonoBehaviour:
   PV: {fileID: 3338455799663400187}
   Movable: 0
   BallIsOnMyControl: 0
+  GamePlaying: 0
   MoveSpeed: 5
   BallPower: 10
   OpPoint: 0
   OpPointText: {fileID: 0}
-  Ball: {fileID: 0}
+  Ball: {fileID: 2655210351893913578, guid: 57f223b930228b647b9ef606f2052363, type: 3}
+  BallPrefeb: {fileID: 2655210351893913578, guid: 57f223b930228b647b9ef606f2052363, type: 3}
 --- !u!114 &5244213730263853688
 MonoBehaviour:
   m_ObjectHideFlags: 0

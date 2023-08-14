@@ -8,11 +8,19 @@ public class DetectionScript : MonoBehaviour
 {
     [SerializeField] GameObject ConnectedBar;
 
-    private void OnCollisionEnter(Collision collision)
+    //private void  (Collision collision)
+    //{
+    //    if(collision.transform.tag == "Ball")
+    //    {
+    //        ConnectedBar.GetComponent<BarScript>().PV.RPC("Hit",RpcTarget.All);
+    //    }
+    //}
+
+    private void OnTriggerEnter(Collider other)
     {
-        if(collision.transform.tag == "Ball")
+        if (other.tag == "Ball")
         {
-            ConnectedBar.GetComponent<BarScript>().PV.RPC("Hit",RpcTarget.All);
+            ConnectedBar.GetComponent<BarScript>().PV.RPC("Hit", RpcTarget.All);
         }
     }
 }

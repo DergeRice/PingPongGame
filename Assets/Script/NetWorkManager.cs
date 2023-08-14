@@ -24,16 +24,7 @@ public class NetWorkManager : MonoBehaviourPunCallbacks
         
     }
 
-    public void ExitCanvas()
-    {
-        PV.RPC("ExitCanvasToAll", RpcTarget.All);
-    }
 
-    [PunRPC]
-    void ExitCanvasToAll()
-    {
-        GameManager.instance.EndSetting();
-    }
 
     private void Start()
     {
