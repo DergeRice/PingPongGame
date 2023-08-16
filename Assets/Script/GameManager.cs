@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     public GameObject Ball, BallPrefeb;
 
-    public bool ImBlue, GamePlaying;
+    public bool ImBlue, GamePlaying, TimerGo;
 
     const string OpRunOutMent = "상대가 떠났습니다. 다음 상대를 기다리는 중"; 
     float GameTime;
@@ -38,12 +38,12 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Start()
     {
-        BallInitialPos = Ball.transform.position;
+        //BallInitialPos = Ball.transform.position;
     }
 
     private void Update()
     {
-        if(GamePlaying) SetTimer();
+        if(GamePlaying&&TimerGo) SetTimer();
     }
 
     public void SetTimer()
@@ -53,11 +53,11 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
         if(GameTime < 0)
         {
-            ShowResult();
+            ShowResult(true);
         }
     }
 
-    public void ShowResult()
+    public void ShowResult(bool ReStart)
     {
         ResultCanvas.SetActive(true);
 
@@ -75,15 +75,19 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
             OpPoint = BluePoint;
         }
 
-        if (MyPoint > OpPoint)
+        if(MyPoint ==  OpPoint)
+        {
+            ResultCanvas.transform.GetChild(0).GetComponent<Text>().text = "무승부";
+        }
+        else if (MyPoint > OpPoint)
         {
             ResultCanvas.transform.GetChild(0).GetComponent<Text>().text = "승리!!!";
         } else ResultCanvas.transform.GetChild(0).GetComponent<Text>().text = "패배..";
 
         ResetAll();
 
+        if(ReStart) EndSetting();
 
-        EndSetting();
 
     }
 
@@ -91,11 +95,17 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         BluePoint = 0;
         RedPoint = 0;
-        ResetPos();
 
+        ResetPos();
+        
+        TimerGo = false;
         GamePlaying = false;
         RedBar.GetComponent<BarScript>().GamePlaying = false;
         BlueBar.GetComponent<BarScript>().GamePlaying = false;
+
+
+        BluePointText.GetComponent<Text>().text = BluePoint.ToString();
+        RedPointText.GetComponent<Text>().text = RedPoint.ToString();
     }
 
     public void ShowCanvas()
@@ -115,10 +125,11 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     public void BallHit(Vector3 Pos, bool ImBlue)
     {
-        Destroy(Ball);
-        GameObject NewBall = Instantiate(BallPrefeb);
-        NewBall.transform.position = Pos;
-        Ball = NewBall;
+        //Destroy(Ball);
+        //GameObject NewBall = Instantiate(BallPrefeb);
+        //NewBall.transform.position = Pos;
+        Ball.transform.position = Pos;
+        //Ball = NewBall;
 
         if (ImBlue) RedPoint += 10;
         else BluePoint += 10;
@@ -126,8 +137,8 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         BluePointText.GetComponent<Text>().text = BluePoint.ToString();
         RedPointText.GetComponent<Text>().text = RedPoint.ToString();
 
-        RedBar.GetComponent<BarScript>().Ball = NewBall;
-        BlueBar.GetComponent<BarScript>().Ball = NewBall;
+       // RedBar.GetComponent<BarScript>().Ball = NewBall;
+        //BlueBar.GetComponent<BarScript>().Ball = NewBall;
     }
 
     [PunRPC]
@@ -143,28 +154,38 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
             if (Master)
             {
+                Player ClientPlayer,MasterClient;
+
+                ClientPlayer = null;
+                MasterClient = null;
+
+                for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
+                {
+                    if (PhotonNetwork.PlayerList[i].IsMasterClient) MasterClient = PhotonNetwork.PlayerList[i];
+                    else ClientPlayer = PhotonNetwork.PlayerList[i];
+                }
+                
                 MasterCanvas.SetActive(false);
                 Ball.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.MasterClient);
 
                 if (ImBlue)
                 {
-                    PV.RPC("SetMyPlayerBlue", PhotonNetwork.PlayerList[1], false);
+                    PV.RPC("SetMyPlayerBlue", ClientPlayer, false);
 
                     SetBallPos(BlueBar);
-                    RedBar.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.PlayerList[1]);
-                    BlueBar.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.PlayerList[0]);
+                    RedBar.GetComponent<PhotonView>().TransferOwnership(ClientPlayer);
+                    BlueBar.GetComponent<PhotonView>().TransferOwnership(MasterClient);
                     // transfer ownership to other player (except me:0)
-                    BlueBar.GetComponent<BarScript>().BallIsOnMyControl = true;
+                    
 
                 }
                 else
                 {
-                    PV.RPC("SetMyPlayerBlue", PhotonNetwork.PlayerList[1], true);
+                    PV.RPC("SetMyPlayerBlue", ClientPlayer, true);
 
                     SetBallPos(RedBar);
-                    RedBar.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.PlayerList[0]);
-                    BlueBar.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.PlayerList[1]);
-                    RedBar.GetComponent<BarScript>().BallIsOnMyControl = true;
+                    RedBar.GetComponent<PhotonView>().TransferOwnership(MasterClient);
+                    BlueBar.GetComponent<PhotonView>().TransferOwnership(ClientPlayer);
                 }
             }
             else ClientCanvas.SetActive(false);
@@ -174,17 +195,26 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     IEnumerator CountCanvasCoroutine(int InitialSec)
     {
-        if (InitialSec == 0) 
+        if (InitialSec <= 0) 
         {
             RedBar.GetComponent<BarScript>().GamePlaying = true;
             BlueBar.GetComponent<BarScript>().GamePlaying = true;
+            ResultCanvas.SetActive(false);
+            StopCoroutine(nameof(CountCanvasCoroutine));
+            TimerGo = true;
             yield return null;
+            
         }
 
         CountCanvas.transform.GetChild(0).GetComponent<Text>().text = $"{InitialSec}초 뒤에 게임을 시작합니다!!";
-        yield return WaitOneSec;
 
-        StartCoroutine("CountCanvasCoroutine",InitialSec - 1);
+        if (InitialSec <= 0) { yield return null; }
+        else {
+            yield return WaitOneSec;
+            StartCoroutine("CountCanvasCoroutine", InitialSec - 1);
+        }
+
+        
     }
 
     public void StartGame()
@@ -216,6 +246,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         Ball.transform.position =  Target.GetComponent<BarScript>().BallPos;
         Ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
         Ball.GetComponent<Rigidbody>().AddForce(Vector3.zero, ForceMode.VelocityChange);
+        Target.GetComponent<BarScript>().BallIsOnMyControl = true;
     }
 
 
@@ -223,15 +254,24 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         RedBar.transform.position = RedBar.GetComponent<BarScript>().InitialPos;
         BlueBar.transform.position = BlueBar.GetComponent<BarScript>().InitialPos;
-        Ball.transform.position = BallInitialPos;
+        Ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        
+        Ball.transform.position = Ball.GetComponent<BallScript>().InitialPos;
     }
 
     [PunRPC]
     public void OpRunOutGame()
     {
         ResetAll();
-        ShowResult();
+        ShowResult(false);
+        InGameCanvas.SetActive(false);
+        CommonCanvas.SetActive(false);
         MasterCanvas.SetActive(true);
+
+
+        RedBar.GetComponent<BarScript>().Movable = false;
+        BlueBar.GetComponent<BarScript>().Movable = false;
+
         EnterOp.SetActive(false);
         WaitOp.SetActive(true);
         WaitOp.GetComponent<Text>().text = OpRunOutMent;

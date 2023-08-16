@@ -40,7 +40,7 @@ public class BarScript : MonoBehaviour
 
     private void Update()
     {
-        transform.position = Vector3.Lerp(transform.position, NetworkPos, Time.deltaTime * 10);
+        //transform.position = Vector3.Lerp(transform.position, NetworkPos, Time.deltaTime * 10);
 
         if (Movable && GamePlaying)
         {

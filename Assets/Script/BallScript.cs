@@ -35,7 +35,7 @@ public class BallScript : MonoBehaviourPunCallbacks
     {
        if(gameManager.DebugMode) DebugModeAction();
 
-        transform.position = Vector3.Lerp(transform.position, NetworkPos, Time.deltaTime * 10);
+       // transform.position = Vector3.Lerp(transform.position, NetworkPos, Time.deltaTime * 10);
     }
 
     void DebugModeAction()
