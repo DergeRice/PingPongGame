@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     // Start is called before the first frame update
     private void Awake()
     {
+        Screen.SetResolution(640, 360,false);
         instance = this;
         GameTime = LimitTime;
         PV = GetComponent<PhotonView>();
